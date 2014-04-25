@@ -301,7 +301,7 @@ uses
   Windows,
   Graphics,
   Classes,
-  ExtCtrls; 
+  ExtCtrls; //add by lxpbuaa
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -1081,7 +1081,7 @@ type
     procedure DoPaint;			// Sync. paint procedure
     procedure DoEvent;
     procedure SetActiveImage(const Value: integer);// Sync. event procedure
-    procedure OnEventRaiseTimer(Sender: TObject); 
+    procedure OnEventRaiseTimer(Sender: TObject); //add by lxpbuaa
   protected
     procedure Execute; override;
     procedure SetAnimationSpeed(Value: integer);
@@ -1113,7 +1113,7 @@ type
 
   TGIFImage = class(TGraphic)
   private
-    FLoopCount: Integer; 
+    FLoopCount: Integer; //add by lxpbuaa
     FEventRaiseTimer: TTimer;
     IsDrawing		: Boolean;
     IsInsideGetPalette	: boolean;
@@ -1235,7 +1235,7 @@ type
     property OnAfterPaint: TNotifyEvent read FOnAfterPaint write FOnAfterPaint;
     property OnLoop: TNotifyEvent read FOnLoop write FOnLoop;
     property OnEndPaint	: TNotifyEvent read FOnEndPaint	 write FOnEndPaint	;
-    property LoopCount: Integer read FLoopCount write FLoopCount; 
+    property LoopCount: Integer read FLoopCount write FLoopCount; //add by lxpbuaa
 {$IFDEF VER9x}
     property Palette: HPALETTE read GetPalette write SetPalette;
     property PaletteModified: Boolean read FPaletteModified write FPaletteModified;
@@ -9936,7 +9936,7 @@ begin
   FreeOnTerminate := True;
   Onterminate := DoOnTerminate;
   FImage := AImage;
-  FImage.FEventRaiseTimer.OnTimer := OnEventRaiseTimer; 
+  FImage.FEventRaiseTimer.OnTimer := OnEventRaiseTimer; //add by lxpbuaa
   FCanvas := ACanvas;
   FRect := ARect;
   FActiveImage := -1;
@@ -10342,7 +10342,7 @@ end;
 
 // Main thread execution loop - This is where it all happens...
 var
-  LoopElapsed: Integer = 0; 
+  LoopElapsed: Integer = 0; //add by lxpbuaa
 procedure TGIFPainter.Execute;
 var
   i			: integer;
@@ -10364,7 +10364,6 @@ var
     FEvent := Event;
     try
       DoSynchronize(DoEvent);
-     // DoEvent;
       LoopElapsed := 0;
     finally
 //      FEvent := nil;
@@ -10420,8 +10419,8 @@ begin
           // Note: ActiveImage may be altered by the event handler
           if (FStarted) then
           begin
-            FireEvent(FOnLoop); //原来只有这一句
-           { if (goLoop in DrawOptions) and
+            //FireEvent(FOnLoop); //原来只有这一句
+            if (goLoop in DrawOptions) and
                (not (goLoopContinously in DrawOptions)) and
                (FImage.FLoopCount <= LoopElapsed) then
             begin
@@ -10431,7 +10430,7 @@ begin
             begin
               Inc(LoopElapsed); 
               FireEvent(FOnLoop);
-            end;  }
+            end;
           end;
 
           // Loop to animate
@@ -11198,7 +11197,7 @@ end;
 constructor TGIFImage.Create;
 begin
   inherited Create;
-
+  //add by lxpbuaa
   FLoopCount := 0;
   FEventRaiseTimer := TTimer.Create(nil);
   with FEventRaiseTimer do
@@ -11230,7 +11229,7 @@ destructor TGIFImage.Destroy;
 var
   i			: integer;
 begin
-  FreeAndNil(FEventRaiseTimer);
+  FreeAndNil(FEventRaiseTimer); //add by lxpbuaa
   PaintStop;
   with FPainters.LockList do
     try
@@ -12381,10 +12380,14 @@ end;
 function TGIFImage.Paint(ACanvas: TCanvas; const Rect: TRect;
   Options: TGIFDrawOptions): TGIFPainter;
 begin
-  Result := InternalPaint(nil, ACanvas, Rect, Options);
-  if (Result <> nil) then
-    // Run in separate thread
-    Result.Start;
+  try
+    Result := InternalPaint(nil, ACanvas, Rect, Options);
+    if (Result <> nil) then
+      // Run in separate thread
+      Result.Start;
+  except
+    Result := nil;
+  end;
 end;
 
 procedure TGIFImage.PaintStart;
@@ -12624,5 +12627,4 @@ finalization
   {$ENDIF}  // 2001.07.23
 {$ENDIF}
 end.
-
 
